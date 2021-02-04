@@ -24,7 +24,7 @@ Parameters:
 
   DomainCertificateArn:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /Certificates/hidden.bid/subomains
+    Default: /Certificates/hidden.bid/subdomains
 
 Mappings:
   Domain:
