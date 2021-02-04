@@ -12,8 +12,7 @@ To make things a bit more challenging & interesting:
 * Custom domain name for API for every stage.
 * Use AWS SSM Parameter Store for data you don't want to expose in config files.
 
-
-#Why Swagger?
+# Why Swagger?
 The bare SAM doesn't support API Gateway mapping templates, but Swagger does. As a bonus, it generates fancy 
 documentation that even can execute sample requests to endpoints. Well, documentation is a must for a big project, 
 but it can help with personal ones too: you'll thank yourself if you revisit this project after years.
@@ -100,7 +99,7 @@ exports.handler = async (event, context) => {
 };
 ```
 
-#API Gateway mapping templates
+# API Gateway mapping templates
 It might be hard to change the request format without breaking all existing code that depends on your APIs. 
 Here comes the mapping ability that allows you to transform requests to the format your function expects.
 
@@ -133,7 +132,7 @@ const realData = event.numbers;
 realData >>> [1,2,3...]
 ```
 
-#Multiple deployment stages
+# Multiple deployment stages
 Under parameters section declare the 'Stage' and 'NamePrefix' variables.
 Treat 'NamePrefix' as a constant.
 ```yaml
@@ -228,7 +227,7 @@ Now you can access it inside the code, NodeJS example:
 const message = `Hello World from ${process.env.currentStage} stage!`;
 ```
 
-#API Gateway custom domain name
+# API Gateway custom domain name
 While it's possible to do with SAM, you need an ARN of SSL certificate on AWS Certificate Manager
 before writing any YAML code. After you have it, add the 'Domain' section under the SAM template's API declaration.
 ```yaml
@@ -250,7 +249,7 @@ template using AWS::CertificateManager::Certificate from CloudFormation, then re
 AWS::Route53::RecordSet can automate DNS pointing too. While it all sounds nice, I have domain managed by a different provider,
 and find the above approach much simpler.
 
-#Custom domain names for different stages
+# Custom domain names for different stages
 Above setup works nicely until you consider to have multiple environments like dev, test, prod, etc: 
 a domain can be associated only with one API Gateway resource. My solution for this is to have different domains:
 * samhello-dev.hidden.bid for dev
@@ -284,7 +283,7 @@ Resources:
 The certificate must either cover all possible domains for this application or be a wildcard certificate like *.hidden.bid.
 Don't forget to point DNS to the API gateway's domain for all stages.
 
-#Hide certificate ARN using AWS SSM Parameter Store
+# Hide certificate ARN using AWS SSM Parameter Store
 The same goes for any other data you want to keep private, like database connection links, passwords, etc.
 After you have created the parameter inside the parameter store console, add reference to it in the
 SAM template. Set the 'Default' value to the exact name of the created parameter in the SSM Parameter Store.
