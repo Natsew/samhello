@@ -18,6 +18,8 @@ The bare SAM doesn't support API Gateway mapping templates, but Swagger does. As
 documentation that even can execute sample requests to endpoints. Well, documentation is a must for a big project, 
 but it can help with personal ones too: you'll thank yourself if you revisit this project after years.
 
+[Here's the documentation for this project API.](https://natsew.github.io/samhello/)
+
 # CORS for non-proxy integrations
 API Gateway should handle headers itself when you use a non-proxy integration.  
 To achieve this, add the 'Cors' section in the SAM template.
