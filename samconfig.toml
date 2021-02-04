@@ -1,0 +1,33 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "samhello"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1c7k1porbelqa"
+s3_prefix = "samhello"
+region = "us-east-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Stage=\"Dev\" StackName=\"SamHelloWorld\""
+
+[test]
+[test.deploy]
+[test.deploy.parameters]
+stack_name = "samhello-test"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1c7k1porbelqa"
+s3_prefix = "samhello-test"
+region = "us-east-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Stage=\"Test\" StackName=\"SamHelloWorld\""
+
+[prod]
+[prod.deploy]
+[prod.deploy.parameters]
+stack_name = "samhello-prod"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-1c7k1porbelqa"
+s3_prefix = "samhello-prod"
+region = "us-east-2"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "Stage=\"Prod\" StackName=\"SamHelloWorld\""

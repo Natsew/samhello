@@ -1,0 +1,159 @@
+swagger: "2.0"
+info:
+  title: Sample API
+  description: Testing AWS SAM + Swagger + API Gateway request mappings + CORS.
+  version: 1.0.0
+host: samhello.hidden.bid
+schemes:
+  - https
+paths:
+  /fun:
+    get:
+      summary: Does something to your array of numbers!
+      produces:
+        - application/json
+      parameters:
+        - name: numbers
+          in: query
+          description: Array of numbers to transform
+          required: true
+          type: array
+          items:
+            type: number
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/response'
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: aws
+        passthroughBehavior: when_no_templates
+        requestTemplates:
+          application/json: |
+            {
+                "numbers" : [
+                    #if("$!input.params('numbers')" != "")
+                        #foreach($num in $input.params('numbers').split(','))
+                            "$num"
+                            #if($foreach.hasNext),#end
+                        #end
+                    #end
+                ]
+            }
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${AnotherFunction.Arn}/invocations
+
+  /hello:
+    get:
+      summary: Hello world, I guess?
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/response'
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: aws_proxy
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HelloWorldFunction.Arn}/invocations
+
+  /postIt:
+    post:
+      summary: A post method that's lazy to do something, so expect nothing
+      produces:
+        - application/json
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/response'
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+      x-amazon-apigateway-integration:
+        httpMethod: POST
+        type: aws_proxy
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PostItFunction.Arn}/invocations
+
+  /restring:
+    post:
+      summary: Reverses a string. .em esrever ot yrT
+      consumes:
+        - application/json
+      produces:
+        - application/json
+      parameters:
+        - name: body
+          in: body
+          required: true
+          schema:
+            type: object
+            required:
+              - string
+            properties:
+              string:
+                type: string
+                description: A string you want to reverse.
+      responses:
+        200:
+          description: OK
+          schema:
+            $ref: '#/definitions/response'
+          headers:
+            Access-Control-Allow-Headers:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Origin:
+              type: string
+      x-amazon-apigateway-integration:
+        httpMethod: post
+        type: aws
+        passthroughBehavior: when_no_templates
+        responses:
+          default:
+            statusCode: "200"
+            responseParameters:
+              method.response.header.Access-Control-Allow-Origin: "'*'"
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ReStringFunction.Arn}/invocations
+definitions:
+  response:
+    type: object
+    properties:
+      type:
+        type: integer
+        description: Execution result code, 0 - error, 1 - success
+      msg:
+        type: string
+        description: A message from endpoint, describes result of execution or error
+      data:
+        type: object
+        description: Resulting data object if endpoind processes anything

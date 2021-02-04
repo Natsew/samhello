@@ -1,0 +1,119 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Sample AWS SAM app with custom domain, CORS, request mappings, multiple stages, proxy & non-proxy Lambda integrations
+
+Globals:
+  Function:
+    Runtime: nodejs12.x
+    Timeout: 3
+
+Parameters:
+  Stage:
+    Type: String
+    Default: Dev
+    AllowedValues:
+      - Dev
+      - Test
+      - Prod
+    Description: Enviroment to deploy, possible values [Dev, Test, Prod]
+
+  NamePrefix:
+    Type: String
+    Default: SamHelloWorld
+
+  DomainCertificateArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /Certificates/hidden.bid/subomains
+
+Mappings:
+  Domain:
+    Dev:
+      Name: samhello-dev.hidden.bid
+    Test:
+      Name: samhello-test.hidden.bid
+    Prod:
+      Name: samhello.hidden.bid
+
+Resources:
+  RestAPI:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub "${NamePrefix}_${Stage}_REST_API"
+      StageName: !Sub ${Stage}
+      EndpointConfiguration: Regional
+      Domain:
+        DomainName: !FindInMap [Domain, !Ref Stage, Name]
+        CertificateArn: !Ref DomainCertificateArn
+      Cors:
+        AllowMethods: "'GET,OPTIONS,POST'"
+        AllowHeaders: "'Content-Type'"
+        AllowOrigin: "'*'"
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: SwaggerAPI.yaml
+
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: hello-world/
+      Handler: index.handler
+      FunctionName: !Sub "${NamePrefix}_${Stage}_hello"
+      Environment:
+        Variables:
+          currentStage: !Sub ${Stage}
+      Events:
+        ApiGET:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: get
+            RestApiId:
+              Ref: RestAPI
+
+  AnotherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: fun/
+      Handler: index.handler
+      FunctionName: !Sub "${NamePrefix}_${Stage}_fun"
+      Events:
+        ApiGET:
+          Type: Api
+          Properties:
+            Path: /fun
+            Method: get
+            RestApiId:
+              Ref: RestAPI
+
+  ReStringFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: restring/
+      Handler: index.handler
+      FunctionName: !Sub "${NamePrefix}_${Stage}_reString"
+      Events:
+        ApiPOST:
+          Type: Api
+          Properties:
+            Path: /restring
+            Method: post
+            RestApiId:
+              Ref: RestAPI
+
+  PostItFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: postit/
+      Handler: index.handler
+      FunctionName: !Sub "${NamePrefix}_${Stage}_postIt"
+      Events:
+        ApiPOST:
+          Type: Api
+          Properties:
+            Path: /postIt
+            Method: post
+            RestApiId:
+              Ref: RestAPI
